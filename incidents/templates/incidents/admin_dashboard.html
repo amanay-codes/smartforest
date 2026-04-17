@@ -1,0 +1,90 @@
+{% extends 'incidents/base.html' %}
+{% block content %}
+<div class="hero">
+    <h2><i class="fas fa-shield-alt me-2"></i>Admin Dashboard</h2>
+    <p class="mb-0">Manage and monitor all forest incident reports</p>
+</div>
+
+<!-- FILTERS -->
+<div class="card p-4 mb-4">
+    <h6 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>Filter Reports</h6>
+    <form method="GET" class="row g-3">
+        <div class="col-md-3">
+            <select name="incident_type" class="form-control">
+                <option value="">All Types</option>
+                <option value="wildfire">Wildfire</option>
+                <option value="illegal_logging">Illegal Logging</option>
+                <option value="pollution">Pollution</option>
+                <option value="forest_damage">Forest Damage</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control" placeholder="Search by keyword...">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-forest w-100">
+                <i class="fas fa-search me-1"></i>Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- REPORTS TABLE -->
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>All Reports</h5>
+        <span class="badge" style="background-color: #2d6a4f; font-size: 0.9rem;">
+            Total: {{ total }}
+        </span>
+    </div>
+    {% if reports %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead style="background-color: #f0f7f0;">
+                <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td><i class="fas fa-user me-1 text-muted"></i>{{ report.user.username }}</td>
+                    <td>{{ report.get_incident_type_display }}</td>
+                    <td>{{ report.location }}</td>
+                    <td>{{ report.submitted_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-{{ report.status }}">
+                            {{ report.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_report_detail' report.pk %}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-eye me-1"></i>Manage
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No reports found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

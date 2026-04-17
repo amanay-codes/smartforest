@@ -110,3 +110,8 @@ def admin_statistics(request):
         'by_type': by_type,
         'by_status': by_status,
     })
+@user_passes_test(is_admin)
+def admin_users(request):
+    from django.contrib.auth.models import User
+    users = User.objects.all().order_by('-date_joined')
+    return render(request, 'incidents/admin_users.html', {'users': users})

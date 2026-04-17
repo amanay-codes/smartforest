@@ -1,0 +1,54 @@
+{% extends 'incidents/base.html' %}
+{% block content %}
+<div class="hero">
+    <h2><i class="fas fa-users me-2"></i>Registered Users</h2>
+    <p class="mb-0">All users registered in Smart Forest IMS</p>
+</div>
+
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>Users List</h5>
+        <span class="badge" style="background-color: #2d6a4f; font-size: 0.9rem;">
+            Total: {{ users.count }}
+        </span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead style="background-color: #f0f7f0;">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Date Joined</th>
+                    <th>Role</th>
+                    <th>Reports</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><i class="fas fa-user me-1 text-muted"></i>{{ u.username }}</td>
+                    <td>{{ u.email|default:"-" }}</td>
+                    <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        {% if u.is_staff %}
+                            <span class="badge" style="background-color: #2d6a4f;">Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Citizen</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-bold" style="color: #2d6a4f;">
+                            {{ u.incidentreport_set.count }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a href="{% url 'admin_dashboard' %}" class="btn btn-forest mt-3">
+    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+</a>
+{% endblock %}
