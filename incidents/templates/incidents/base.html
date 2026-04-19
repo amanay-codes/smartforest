@@ -4,54 +4,560 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Forest IMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f0f7f0; font-family: 'Segoe UI', sans-serif; }
-        .navbar { background-color: #2d6a4f; }
-        .navbar-brand, .nav-link { color: white !important; }
-        .btn-forest { background-color: #2d6a4f; color: white; }
-        .btn-forest:hover { background-color: #1b4332; color: white; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-        .status-pending { background-color: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
-        .status-in_progress { background-color: #cfe2ff; color: #084298; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
-        .status-resolved { background-color: #d1e7dd; color: #0f5132; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
-        .hero { background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; }
+        :root {
+            --forest: #1a3a2a;
+            --moss: #2d5a3d;
+            --sage: #52796f;
+            --mint: #84a98c;
+            --cream: #f8f4ef;
+            --bark: #8b6f47;
+            --soil: #3d2b1f;
+            --mist: #cad2c5;
+            --gold: #c9a84c;
+            --danger: #c0392b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--cream);
+            color: var(--soil);
+            min-height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2352796f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--forest);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--cream) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--forest);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--mist);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-user {
+            color: var(--mint);
+            font-size: 0.875rem;
+            padding: 6px 14px;
+            border: 1px solid rgba(132,169,140,0.3);
+            border-radius: 20px;
+        }
+
+        .nav-logout {
+            background: rgba(192,57,43,0.2) !important;
+            color: #e88 !important;
+            border: 1px solid rgba(192,57,43,0.3) !important;
+        }
+
+        .nav-logout:hover {
+            background: rgba(192,57,43,0.4) !important;
+        }
+
+        /* MAIN CONTENT */
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-color: var(--moss);
+            color: var(--forest);
+        }
+
+        .alert-error, .alert-danger {
+            background: #fdecea;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* HERO BANNER */
+        .hero {
+            background: linear-gradient(135deg, var(--forest) 0%, var(--moss) 60%, var(--sage) 100%);
+            color: white;
+            padding: 2.5rem 3rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            right: -40px;
+            top: -40px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            right: 60px;
+            bottom: -60px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+
+        .hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .hero p { opacity: 0.75; font-size: 0.95rem; }
+
+        /* CARDS */
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+            padding: 1.75rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* STAT CARDS */
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--moss);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--sage);
+            font-weight: 500;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--moss);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--forest);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(45,90,61,0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--sage);
+            border: 1.5px solid var(--mist);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--sage);
+            color: var(--forest);
+        }
+
+        .btn-danger {
+            background: #fdecea;
+            color: var(--danger);
+            border: 1.5px solid #f5c6c4;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* TABLES */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--mist);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead tr {
+            background: #f5f0ea;
+        }
+
+        thead th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--sage);
+            border-bottom: 1px solid var(--mist);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f0ebe5;
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover { background: #faf7f4; }
+        tbody tr:last-child { border-bottom: none; }
+
+        tbody td {
+            padding: 13px 16px;
+            color: var(--soil);
+            vertical-align: middle;
+        }
+
+        /* STATUS BADGES */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .badge-pending {
+            background: #fff8e1;
+            color: #e65100;
+        }
+
+        .badge-in_progress {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-resolved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-admin {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .badge-citizen {
+            background: #f5f0ea;
+            color: var(--sage);
+        }
+
+        /* FORMS */
+        .form-group { margin-bottom: 1.25rem; }
+
+        label {
+            display: block;
+            font-size: 0.825rem;
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--mist);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--soil);
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--sage);
+            box-shadow: 0 0 0 3px rgba(82,121,111,0.12);
+        }
+
+        select { appearance: none; cursor: pointer; }
+        textarea { resize: vertical; min-height: 100px; }
+
+        /* SECTION TITLES */
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--forest);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--mist);
+        }
+
+        /* GRID */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+        @media (max-width: 768px) {
+            .grid-3 { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .hero { padding: 1.5rem; }
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--sage);
+        }
+
+        .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state p { margin-bottom: 1.25rem; }
+
+        /* FILTER BAR */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-bar .form-group { margin-bottom: 0; flex: 1; min-width: 150px; }
+
+        /* DETAIL ROW */
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-item label { color: var(--sage); font-weight: 500; }
+        .detail-item p { font-size: 0.95rem; color: var(--soil); margin-top: 2px; }
+
+        /* ADMIN NOTE BOX */
+        .note-box {
+            background: #f5f0ea;
+            border-left: 3px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            padding: 14px 16px;
+            margin-top: 1rem;
+        }
+
+        .note-box .note-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--bark);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* PROGRESS BAR */
+        .progress-bar-wrap {
+            background: var(--mist);
+            border-radius: 4px;
+            height: 6px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--moss);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--forest);
+        }
+
+        /* DIVIDER */
+        hr { border: none; border-top: 1px solid var(--mist); margin: 1.5rem 0; }
+
+        /* FORM CONTROL FROM DJANGO */
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--mist);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--soil);
+            background: white;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--sage);
+            box-shadow: 0 0 0 3px rgba(82,121,111,0.12);
+        }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
-            <i class="fas fa-tree me-2"></i>Smart Forest IMS
-        </a>
-        <div class="navbar-nav ms-auto">
-            {% if user.is_authenticated %}
-                <span class="nav-link"><i class="fas fa-user me-1"></i>{{ user.username }}</span>
-                {% if user.is_staff %}
-                    <a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a>
-                    <a class="nav-link" href="{% url 'admin_statistics' %}">Statistics</a>
-                    <a class="nav-link" href="{% url 'admin_users' %}">Users</a>
-                {% else %}
-                    <a class="nav-link" href="{% url 'dashboard' %}">My Reports</a>
-                    <a class="nav-link" href="{% url 'submit_report' %}">Report Incident</a>
-                {% endif %}
-                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+
+<nav class="navbar">
+    <a class="navbar-brand" href="#">
+        <div class="brand-icon"><i class="fas fa-tree"></i></div>
+        Smart Forest IMS
+    </a>
+    <ul class="nav-links">
+        {% if user.is_authenticated %}
+            <li><span class="nav-user"><i class="fas fa-circle" style="font-size:7px; color: #84a98c;"></i> {{ user.username }}</span></li>
+            {% if user.is_staff %}
+                <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'admin_statistics' %}">Statistics</a></li>
+                <li><a href="{% url 'admin_users' %}">Users</a></li>
+            {% else %}
+                <li><a href="{% url 'dashboard' %}">My Reports</a></li>
+                <li><a href="{% url 'submit_report' %}">Report Incident</a></li>
             {% endif %}
-        </div>
-    </div>
+            <li><a href="{% url 'logout' %}" class="nav-logout">Logout</a></li>
+        {% endif %}
+    </ul>
 </nav>
-<div class="container mt-4">
+
+<div class="main-container">
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
     {% endif %}
     {% block content %}{% endblock %}
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
