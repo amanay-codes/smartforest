@@ -8,11 +8,6 @@
                 <h3 class="mt-2 fw-bold">Create Account</h3>
                 <p class="text-muted">Join Smart Forest IMS</p>
             </div>
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-danger">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
             <form method="POST">
                 {% csrf_token %}
                 <div class="mb-3">

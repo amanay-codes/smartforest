@@ -5,4 +5,6 @@ from .models import IncidentReport
 class IncidentReportAdmin(admin.ModelAdmin):
     list_display = ['user', 'incident_type', 'location', 'status', 'submitted_at']
     list_filter = ['status', 'incident_type']
-    search_fields = ['description', 'location']
+    search_fields = ['description', 'location', 'user__username', 'user__email']
+    date_hierarchy = 'submitted_at'
+    ordering = ['-submitted_at']
