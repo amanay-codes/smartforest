@@ -3,24 +3,25 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import IncidentReport
-from .forms import IncidentReportForm, StatusUpdateForm
+from django.db.models import Count, Q
+
+from .models import IncidentReport, ReportStatus
+from .forms import IncidentReportForm, RegistrationForm, StatusUpdateForm
 
 def is_admin(user):
-    return user.is_staff
+    return user.is_authenticated and user.is_staff
 
 # AUTH VIEWS
 def register_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists')
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('dashboard')
+        for error in form.errors.values():
+            messages.error(request, error[0])
             return redirect('register')
-        user = User.objects.create_user(username=username, email=email, password=password)
-        login(request, user)
-        return redirect('dashboard')
     return render(request, 'incidents/register.html')
 
 def login_view(request):
@@ -43,8 +44,12 @@ def logout_view(request):
 # USER VIEWS
 @login_required
 def dashboard(request):
-    reports = IncidentReport.objects.filter(user=request.user).order_by('-submitted_at')
-    return render(request, 'incidents/dashboard.html', {'reports': reports})
+    reports = IncidentReport.objects.filter(user=request.user)
+    pending_count = reports.filter(status=ReportStatus.PENDING).count()
+    return render(request, 'incidents/dashboard.html', {
+        'reports': reports,
+        'pending_count': pending_count,
+    })
 
 @login_required
 def submit_report(request):
@@ -66,9 +71,9 @@ def report_detail(request, pk):
     return render(request, 'incidents/report_detail.html', {'report': report})
 
 # ADMIN VIEWS
-@user_passes_test(is_admin)
+@user_passes_test(is_admin, login_url='login')
 def admin_dashboard(request):
-    reports = IncidentReport.objects.all().order_by('-submitted_at')
+    reports = IncidentReport.objects.select_related('user')
     incident_type = request.GET.get('incident_type')
     status = request.GET.get('status')
     keyword = request.GET.get('keyword')
@@ -77,16 +82,20 @@ def admin_dashboard(request):
     if status:
         reports = reports.filter(status=status)
     if keyword:
-        reports = reports.filter(description__icontains=keyword)
+        reports = reports.filter(
+            Q(description__icontains=keyword)
+            | Q(location__icontains=keyword)
+            | Q(user__username__icontains=keyword)
+        )
     total = reports.count()
     return render(request, 'incidents/admin_dashboard.html', {
         'reports': reports,
         'total': total,
     })
 
-@user_passes_test(is_admin)
+@user_passes_test(is_admin, login_url='login')
 def admin_report_detail(request, pk):
-    report = get_object_or_404(IncidentReport, pk=pk)
+    report = get_object_or_404(IncidentReport.objects.select_related('user'), pk=pk)
     form = StatusUpdateForm(instance=report)
     if request.method == 'POST':
         form = StatusUpdateForm(request.POST, instance=report)
@@ -99,19 +108,18 @@ def admin_report_detail(request, pk):
         'form': form
     })
 
-@user_passes_test(is_admin)
+@user_passes_test(is_admin, login_url='login')
 def admin_statistics(request):
-    from django.db.models import Count
     total = IncidentReport.objects.count()
-    by_type = IncidentReport.objects.values('incident_type').annotate(count=Count('id'))
-    by_status = IncidentReport.objects.values('status').annotate(count=Count('id'))
+    by_type = IncidentReport.objects.values('incident_type').annotate(count=Count('id')).order_by('incident_type')
+    by_status = IncidentReport.objects.values('status').annotate(count=Count('id')).order_by('status')
     return render(request, 'incidents/admin_statistics.html', {
         'total': total,
         'by_type': by_type,
         'by_status': by_status,
     })
-@user_passes_test(is_admin)
+
+@user_passes_test(is_admin, login_url='login')
 def admin_users(request):
-    from django.contrib.auth.models import User
-    users = User.objects.all().order_by('-date_joined')
+    users = User.objects.annotate(report_count=Count('incidentreport')).order_by('-date_joined')
     return render(request, 'incidents/admin_users.html', {'users': users})
