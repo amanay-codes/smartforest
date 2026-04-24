@@ -1,6 +1,4 @@
-                                                                                                                                                                                                      # Smart Forest IMS
-
-A Django incident management system for reporting and managing forest incidents.
+                A Django incident management system for reporting and managing forest incidents.
 
 ## Local Setup
 
