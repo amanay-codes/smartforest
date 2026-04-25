@@ -1,32 +1,609 @@
 {% extends 'incidents/base.html' %}
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card p-4">
-            <div class="text-center mb-4">
-                <i class="fas fa-tree fa-3x" style="color: #2d6a4f;"></i>
-                <h3 class="mt-2 fw-bold">Smart Forest IMS</h3>
-                <p class="text-muted">Sign in to your account</p>
+<style>
+    .navbar {
+        display: none;
+    }
+
+    .main-container {
+        max-width: none;
+        min-height: 100vh;
+        padding: 0;
+        background: #fbfaf6;
+    }
+
+    .alert {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        z-index: 20;
+        width: min(92vw, 520px);
+        transform: translateX(-50%);
+        box-shadow: 0 18px 40px rgba(13, 38, 25, 0.14);
+    }
+
+    .login-menu {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 30;
+    }
+
+    .menu-toggle {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(30, 77, 43, 0.22);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.88);
+        color: #1e4d2b;
+        cursor: pointer;
+        box-shadow: 0 16px 34px rgba(13, 38, 25, 0.12);
+        transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .menu-toggle:hover,
+    .menu-toggle:focus {
+        background: #ffffff;
+        border-color: rgba(30, 77, 43, 0.42);
+        outline: none;
+        transform: translateY(-1px);
+    }
+
+    .menu-toggle i {
+        font-size: 1.35rem;
+    }
+
+    .login-menu-panel {
+        position: absolute;
+        top: 58px;
+        left: 0;
+        width: 180px;
+        padding: 8px;
+        border: 1px solid rgba(30, 77, 43, 0.14);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 20px 44px rgba(13, 38, 25, 0.18);
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .login-menu.is-open .login-menu-panel {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .login-menu-panel a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: #1e4d2b;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .login-menu-panel a:hover,
+    .login-menu-panel a:focus {
+        background: #eef4ec;
+        outline: none;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
+        background: #fbfaf6;
+    }
+
+    .login-form-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px;
+        background:
+            radial-gradient(circle at 12% 12%, rgba(201, 168, 76, 0.08), transparent 30%),
+            linear-gradient(180deg, #ffffff 0%, #fbfaf6 100%);
+    }
+
+    .login-form-wrap {
+        width: min(100%, 430px);
+    }
+
+    .login-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 42px;
+    }
+
+    .login-brand-mark {
+        width: 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        color: #153d28;
+        background: linear-gradient(145deg, #d8b84f, #f0cf70);
+        box-shadow: 0 16px 30px rgba(130, 101, 23, 0.18);
+        font-size: 1.45rem;
+    }
+
+    .login-brand-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.65rem;
+        line-height: 1;
+        color: #153d28;
+        font-weight: 700;
+    }
+
+    .login-kicker {
+        margin-top: 5px;
+        font-size: 0.82rem;
+        color: #6e7f73;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .login-heading {
+        margin-bottom: 28px;
+    }
+
+    .login-heading h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.35rem;
+        line-height: 1.05;
+        color: #173d29;
+        margin-bottom: 10px;
+    }
+
+    .login-heading p {
+        color: #6e7f73;
+        font-size: 1rem;
+    }
+
+    .login-form {
+        display: grid;
+        gap: 18px;
+    }
+
+    .floating-field {
+        position: relative;
+    }
+
+    .floating-field input {
+        height: 58px;
+        padding: 22px 48px 10px 16px;
+        border: 1.5px solid #d7dfd5;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #20372b;
+        font-size: 1rem;
+        box-shadow: 0 1px 0 rgba(21, 61, 40, 0.03);
+    }
+
+    .floating-field input:focus {
+        border-color: #1e4d2b;
+        box-shadow: 0 0 0 4px rgba(30, 77, 43, 0.12);
+    }
+
+    .floating-field label {
+        position: absolute;
+        top: 18px;
+        left: 16px;
+        margin: 0;
+        color: #718276;
+        font-size: 0.98rem;
+        font-weight: 500;
+        pointer-events: none;
+        transition: all 0.16s ease;
+        background: transparent;
+    }
+
+    .floating-field input:focus + label,
+    .floating-field input:not(:placeholder-shown) + label {
+        top: 8px;
+        color: #1e4d2b;
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #617568;
+        cursor: pointer;
+        transform: translateY(-50%);
+        transition: background 0.16s ease, color 0.16s ease;
+    }
+
+    .password-toggle:hover,
+    .password-toggle:focus {
+        background: #eef4ec;
+        color: #1e4d2b;
+        outline: none;
+    }
+
+    .form-link-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: -7px;
+    }
+
+    .login-link {
+        color: #1e4d2b;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-link:hover {
+        color: #14341f;
+        text-decoration: underline;
+    }
+
+    .login-submit {
+        width: 100%;
+        justify-content: center;
+        min-height: 54px;
+        margin-top: 4px;
+        background: #1e4d2b;
+        color: #ffffff;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        box-shadow: 0 18px 34px rgba(30, 77, 43, 0.22);
+    }
+
+    .login-submit:hover {
+        background: #173d29;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 22px 42px rgba(30, 77, 43, 0.28);
+    }
+
+    .login-footer {
+        margin-top: 34px;
+        padding-top: 24px;
+        border-top: 1px solid #e2e8df;
+        color: #69786d;
+        text-align: center;
+    }
+
+    .forest-visual {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+        color: #ffffff;
+        background:
+            radial-gradient(circle at 74% 25%, rgba(246, 201, 103, 0.95) 0 9%, rgba(246, 201, 103, 0.28) 10% 18%, transparent 19%),
+            linear-gradient(145deg, rgba(13, 52, 40, 0.1), rgba(7, 36, 34, 0.2)),
+            linear-gradient(180deg, #0f3b2c 0%, #103727 42%, #09241f 100%);
+    }
+
+    .forest-visual::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(90deg, rgba(10, 35, 28, 0.46), transparent 42%),
+            radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.18), transparent 28%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 42%);
+        mix-blend-mode: screen;
+        opacity: 0.55;
+    }
+
+    .forest-visual::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, transparent 0 56%, rgba(8, 24, 21, 0.35) 57% 100%),
+            repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 24px);
+        opacity: 0.65;
+    }
+
+    .visual-copy {
+        position: relative;
+        z-index: 4;
+        width: min(560px, 80%);
+        padding: 72px;
+        text-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
+    }
+
+    .visual-copy h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem;
+        line-height: 1.05;
+        margin-bottom: 16px;
+    }
+
+    .visual-copy p {
+        max-width: 390px;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .forest-layer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 64%;
+        z-index: 2;
+    }
+
+    .tree {
+        position: absolute;
+        bottom: 0;
+        width: var(--w);
+        height: var(--h);
+        left: var(--x);
+        background:
+            linear-gradient(90deg, transparent 43%, var(--trunk) 44% 56%, transparent 57%),
+            conic-gradient(from 135deg at 50% 18%, transparent 0 25%, var(--leaf) 0 50%, transparent 0 100%);
+        clip-path: polygon(50% 0, 64% 20%, 58% 20%, 76% 44%, 66% 44%, 88% 76%, 58% 76%, 58% 100%, 42% 100%, 42% 76%, 12% 76%, 34% 44%, 24% 44%, 42% 20%, 36% 20%);
+        opacity: var(--o);
+        filter: blur(var(--blur));
+    }
+
+    .tree.far {
+        --leaf: #2f6c52;
+        --trunk: #254738;
+        --o: 0.58;
+        --blur: 1px;
+    }
+
+    .tree.mid {
+        --leaf: #184832;
+        --trunk: #123323;
+        --o: 0.88;
+        --blur: 0;
+    }
+
+    .tree.front {
+        --leaf: #08231d;
+        --trunk: #061b16;
+        --o: 1;
+        --blur: 0;
+    }
+
+    .mist {
+        position: absolute;
+        left: -10%;
+        right: -10%;
+        height: 120px;
+        border-radius: 999px;
+        background: rgba(218, 234, 221, 0.18);
+        filter: blur(26px);
+        z-index: 3;
+    }
+
+    .mist-one { bottom: 30%; }
+    .mist-two { bottom: 18%; opacity: 0.72; }
+
+    .trail {
+        position: absolute;
+        right: 9%;
+        bottom: -4%;
+        z-index: 3;
+        width: 34%;
+        height: 38%;
+        background: linear-gradient(180deg, rgba(218, 166, 84, 0.5), rgba(80, 53, 32, 0.2));
+        clip-path: polygon(48% 0, 63% 0, 100% 100%, 0 100%);
+        opacity: 0.7;
+    }
+
+    .ranger {
+        position: absolute;
+        right: 24%;
+        bottom: 21%;
+        z-index: 5;
+        width: 34px;
+        height: 88px;
+        color: #061b16;
+    }
+
+    .ranger::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 20px 0 4px currentColor;
+    }
+
+    .ranger::after {
+        content: '';
+        position: absolute;
+        left: 2px;
+        bottom: 0;
+        width: 30px;
+        height: 42px;
+        border-left: 7px solid currentColor;
+        border-right: 7px solid currentColor;
+        transform: skewX(-8deg);
+    }
+
+    @media (max-width: 980px) {
+        .login-page {
+            grid-template-columns: 1fr;
+        }
+
+        .forest-visual {
+            min-height: 360px;
+            order: -1;
+        }
+
+        .login-form-panel {
+            padding: 36px 22px 48px;
+        }
+
+        .visual-copy {
+            padding: 42px 28px;
+            width: min(100%, 520px);
+        }
+
+        .visual-copy h2 {
+            font-size: 2.25rem;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .forest-visual {
+            min-height: 300px;
+        }
+
+        .login-brand {
+            margin-bottom: 30px;
+        }
+
+        .login-heading h1 {
+            font-size: 1.95rem;
+        }
+
+        .visual-copy p {
+            display: none;
+        }
+    }
+</style>
+
+<nav class="login-menu" aria-label="Login page navigation">
+    <button type="button" class="menu-toggle" aria-label="Open navigation menu" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="login-menu-panel">
+        <a href="{% url 'about' %}">
+            <i class="fas fa-circle-info"></i>
+            About Us
+        </a>
+    </div>
+</nav>
+
+<section class="login-page" aria-label="Smart Forest IMS login">
+    <div class="login-form-panel">
+        <div class="login-form-wrap">
+            <div class="login-brand">
+                <div class="login-brand-mark" aria-hidden="true">
+                    <i class="fas fa-tree"></i>
+                </div>
+                <div>
+                    <div class="login-brand-name">Smart Forest IMS</div>
+                    <div class="login-kicker">Incident Management</div>
+                </div>
             </div>
-            <form method="POST">
+
+            <div class="login-heading">
+                <h1>Welcome back</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            <form method="POST" class="login-form">
                 {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Username</label>
-                    <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+                <div class="floating-field">
+                    <input type="text" id="username" name="username" placeholder=" " autocomplete="username" required>
+                    <label for="username">Username</label>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+
+                <div class="floating-field">
+                    <input type="password" id="password" name="password" placeholder=" " autocomplete="current-password" required>
+                    <label for="password">Password</label>
+                    <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
-                <button type="submit" class="btn btn-forest w-100 py-2">
-                    <i class="fas fa-sign-in-alt me-2"></i>Login
+
+                <div class="form-link-row">
+                    <a class="login-link" href="#">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn login-submit">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    Login
                 </button>
             </form>
-            <hr>
-            <p class="text-center mb-0">Don't have an account? 
-                <a href="{% url 'register' %}" style="color: #2d6a4f;">Register here</a>
-            </p>
+
+            <div class="login-footer">
+                Don't have an account?
+                <a class="login-link" href="{% url 'register' %}">Register here</a>
+            </div>
         </div>
     </div>
-</div>
+
+    <aside class="forest-visual" aria-label="Forest conservation scene">
+        <div class="visual-copy">
+            <h2>Protecting Forests, Preserving Life</h2>
+            <p>Monitor incidents, coordinate action, and safeguard the landscapes that keep communities thriving.</p>
+        </div>
+        <div class="mist mist-one"></div>
+        <div class="mist mist-two"></div>
+        <div class="trail"></div>
+        <div class="ranger" aria-hidden="true"></div>
+        <div class="forest-layer" aria-hidden="true">
+            <span class="tree far" style="--x: 2%; --w: 92px; --h: 330px;"></span>
+            <span class="tree far" style="--x: 15%; --w: 116px; --h: 390px;"></span>
+            <span class="tree far" style="--x: 31%; --w: 98px; --h: 340px;"></span>
+            <span class="tree far" style="--x: 50%; --w: 124px; --h: 420px;"></span>
+            <span class="tree far" style="--x: 74%; --w: 108px; --h: 370px;"></span>
+            <span class="tree mid" style="--x: 7%; --w: 132px; --h: 440px;"></span>
+            <span class="tree mid" style="--x: 24%; --w: 152px; --h: 510px;"></span>
+            <span class="tree mid" style="--x: 61%; --w: 142px; --h: 470px;"></span>
+            <span class="tree mid" style="--x: 84%; --w: 160px; --h: 530px;"></span>
+            <span class="tree front" style="--x: -4%; --w: 190px; --h: 620px;"></span>
+            <span class="tree front" style="--x: 38%; --w: 204px; --h: 650px;"></span>
+            <span class="tree front" style="--x: 70%; --w: 220px; --h: 700px;"></span>
+        </div>
+    </aside>
+</section>
+
+<script>
+    const loginMenu = document.querySelector('.login-menu');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const passwordInput = document.querySelector('#password');
+    const passwordToggle = document.querySelector('.password-toggle');
+
+    if (loginMenu && menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            const isOpen = loginMenu.classList.toggle('is-open');
+            menuToggle.setAttribute('aria-expanded', String(isOpen));
+            menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!loginMenu.contains(event.target)) {
+                loginMenu.classList.remove('is-open');
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', 'Open navigation menu');
+            }
+        });
+    }
+
+    if (passwordInput && passwordToggle) {
+        passwordToggle.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+            passwordToggle.setAttribute('aria-pressed', String(isPassword));
+            passwordToggle.innerHTML = isPassword
+                ? '<i class="fas fa-eye-slash"></i>'
+                : '<i class="fas fa-eye"></i>';
+        });
+    }
+</script>
 {% endblock %}

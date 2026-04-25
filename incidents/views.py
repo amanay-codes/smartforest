@@ -3,13 +3,20 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.conf import settings
 from django.db.models import Count, Q
+from django.db.models.functions import TruncMonth
 
 from .models import IncidentReport, ReportStatus
 from .forms import IncidentReportForm, RegistrationForm, StatusUpdateForm
 
 def is_admin(user):
     return user.is_authenticated and user.is_staff
+
+
+def about_view(request):
+    return render(request, 'incidents/about.html')
+
 
 # AUTH VIEWS
 def register_view(request):
@@ -46,9 +53,32 @@ def logout_view(request):
 def dashboard(request):
     reports = IncidentReport.objects.filter(user=request.user)
     pending_count = reports.filter(status=ReportStatus.PENDING).count()
+    resolved_count = reports.filter(status=ReportStatus.RESOLVED).count()
+    critical_count = reports.filter(
+        incident_type__in=['wildfire', 'forest_damage'],
+        status__in=[ReportStatus.PENDING, ReportStatus.IN_PROGRESS],
+    ).count()
+    monthly_reports = (
+        reports.annotate(month=TruncMonth('submitted_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    max_monthly_count = max([item['count'] for item in monthly_reports], default=1)
+    chart_data = [
+        {
+            'label': item['month'].strftime('%b') if item['month'] else 'N/A',
+            'count': item['count'],
+            'height': max(12, round((item['count'] / max_monthly_count) * 100)),
+        }
+        for item in monthly_reports
+    ]
     return render(request, 'incidents/dashboard.html', {
         'reports': reports,
         'pending_count': pending_count,
+        'resolved_count': resolved_count,
+        'critical_count': critical_count,
+        'chart_data': chart_data,
     })
 
 @login_required
@@ -122,4 +152,12 @@ def admin_statistics(request):
 @user_passes_test(is_admin, login_url='login')
 def admin_users(request):
     users = User.objects.annotate(report_count=Count('incidentreport')).order_by('-date_joined')
-    return render(request, 'incidents/admin_users.html', {'users': users})
+    database = settings.DATABASES['default']
+    return render(request, 'incidents/admin_users.html', {
+        'users': users,
+        'database': {
+            'engine': database.get('ENGINE', '').rsplit('.', 1)[-1],
+            'host': database.get('HOST') or 'local file',
+            'name': database.get('NAME'),
+        },
+    })
