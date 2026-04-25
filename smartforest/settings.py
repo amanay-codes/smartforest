@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import parse_qsl, urlparse, unquote
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,6 +29,22 @@ def env_list(name, default=None):
     if not value:
         return default or []
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def database_from_url(url):
+    parsed = urlparse(url)
+    if parsed.scheme not in {"postgres", "postgresql"}:
+        raise ValueError("DATABASE_URL must start with postgres:// or postgresql://")
+
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(parsed.path.lstrip("/")),
+        'USER': unquote(parsed.username or ""),
+        'PASSWORD': unquote(parsed.password or ""),
+        'HOST': parsed.hostname or "",
+        'PORT': str(parsed.port or 5432),
+        'OPTIONS': dict(parse_qsl(parsed.query)),
+    }
 
 
 load_env_file(BASE_DIR / ".env")
@@ -87,9 +104,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'smartforest.wsgi.application'
 
 
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
 
-if DB_ENGINE == "postgresql":
+if DATABASE_URL:
+    DATABASES = {
+        'default': database_from_url(DATABASE_URL),
+    }
+elif DB_ENGINE == "postgresql":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
