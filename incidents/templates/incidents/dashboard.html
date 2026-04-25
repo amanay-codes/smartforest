@@ -1,79 +1,701 @@
 {% extends 'incidents/base.html' %}
 {% block content %}
-<div class="hero">
-    <h2><i class="fas fa-tree me-2"></i>Welcome, {{ user.username }}!</h2>
-    <p class="mb-0">Track and manage your forest incident reports</p>
-</div>
+<style>
+    body {
+        background: #f5f0e8;
+        background-image: none;
+    }
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <h2 class="fw-bold" style="color: #2d6a4f;">{{ reports.count }}</h2>
-            <p class="text-muted mb-0">Total Reports</p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <h2 class="fw-bold" style="color: #f4a261;">
-                {{ pending_count }}
-            </h2>
-            <p class="text-muted mb-0">Pending</p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-3 text-center">
-            <a href="{% url 'submit_report' %}" class="btn btn-forest w-100 py-3">
-                <i class="fas fa-plus me-2"></i>Report New Incident
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 66px;
+        background: #1e4d2b;
+        z-index: 40;
+    }
+
+    .nav-links a[href$="/report/submit/"] {
+        background: #c8972b;
+        color: #1a2e1a;
+        font-weight: 800;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .nav-links a[href$="/report/submit/"]:hover,
+    .nav-logout:hover {
+        background: #d7aa40 !important;
+        color: #142315 !important;
+    }
+
+    .nav-logout {
+        background: #c8972b !important;
+        color: #1a2e1a !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        font-weight: 800 !important;
+    }
+
+    .main-container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-shell {
+        min-height: 100vh;
+        padding-top: 66px;
+        background: #f5f0e8;
+    }
+
+    .dashboard-sidebar {
+        position: fixed;
+        top: 66px;
+        left: 0;
+        bottom: 0;
+        width: 220px;
+        padding: 22px 14px;
+        overflow-y: auto;
+        background:
+            linear-gradient(180deg, rgba(30, 77, 43, 0.86), rgba(11, 35, 24, 0.96)),
+            #163d22;
+        color: #f5f0e8;
+        box-shadow: 10px 0 28px rgba(18, 41, 25, 0.14);
+    }
+
+    .sidebar-section {
+        margin-bottom: 24px;
+    }
+
+    .sidebar-label {
+        margin: 0 10px 9px;
+        color: rgba(245, 240, 232, 0.58);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-height: 42px;
+        margin-bottom: 5px;
+        padding: 10px 12px;
+        border-left: 4px solid transparent;
+        border-radius: 0 8px 8px 0;
+        color: rgba(245, 240, 232, 0.86);
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .sidebar-link i {
+        width: 18px;
+        color: #c8972b;
+        text-align: center;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+        border-left-color: #c8972b;
+        background: rgba(220, 232, 210, 0.13);
+        color: #ffffff;
+    }
+
+    .dashboard-main {
+        margin-left: 220px;
+        padding: 34px;
+    }
+
+    .dashboard-title-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-title h1 {
+        font-family: 'Playfair Display', serif;
+        color: #1e4d2b;
+        font-size: 2rem;
+        margin-bottom: 4px;
+    }
+
+    .dashboard-title p {
+        color: #6b7a6b;
+        font-size: 0.95rem;
+    }
+
+    .quick-action {
+        background: #1e4d2b;
+        color: #ffffff;
+        box-shadow: 0 14px 28px rgba(30, 77, 43, 0.2);
+    }
+
+    .quick-action:hover {
+        background: #163d22;
+        color: #ffffff;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .dashboard-card {
+        background: #ffffff;
+        border: 1px solid rgba(30, 77, 43, 0.07);
+        border-radius: 8px;
+        box-shadow: 0 14px 34px rgba(40, 54, 34, 0.08);
+    }
+
+    .stat-tile {
+        position: relative;
+        min-height: 132px;
+        padding: 22px;
+        overflow: hidden;
+    }
+
+    .stat-tile::after {
+        content: '';
+        position: absolute;
+        top: -28px;
+        right: -18px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: rgba(30, 77, 43, 0.07);
+    }
+
+    .stat-icon {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        z-index: 1;
+        color: rgba(30, 77, 43, 0.34);
+        font-size: 1.45rem;
+    }
+
+    .stat-value {
+        display: block;
+        margin-bottom: 8px;
+        font-family: 'Playfair Display', serif;
+        font-size: 2.25rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stat-total .stat-value { color: #1e4d2b; }
+    .stat-pending .stat-value { color: #c8972b; }
+    .stat-resolved .stat-value { color: #4f7d57; }
+    .stat-critical .stat-value { color: #8d3528; }
+
+    .stat-label {
+        color: #1a2e1a;
+        font-weight: 800;
+    }
+
+    .stat-hint {
+        margin-top: 8px;
+        color: #6b7a6b;
+        font-size: 0.82rem;
+    }
+
+    .dashboard-columns {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+        gap: 22px;
+        margin-bottom: 22px;
+    }
+
+    .welcome-panel {
+        position: relative;
+        min-height: 258px;
+        padding: 32px;
+        overflow: hidden;
+        color: #ffffff;
+        background:
+            radial-gradient(circle at 86% 12%, rgba(200, 151, 43, 0.34), transparent 26%),
+            linear-gradient(135deg, #1e4d2b 0%, #2f6541 68%, #6f8a65 100%);
+    }
+
+    .welcome-panel::before,
+    .welcome-panel::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .welcome-panel::before {
+        width: 210px;
+        height: 210px;
+        right: -42px;
+        top: -50px;
+    }
+
+    .welcome-panel::after {
+        width: 160px;
+        height: 160px;
+        right: 60px;
+        bottom: -72px;
+    }
+
+    .welcome-copy {
+        position: relative;
+        z-index: 2;
+        max-width: 500px;
+    }
+
+    .welcome-copy h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        line-height: 1.08;
+        margin-bottom: 10px;
+    }
+
+    .welcome-copy p {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1rem;
+        line-height: 1.65;
+    }
+
+    .welcome-actions {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .welcome-actions .btn {
+        background: #ffffff;
+        color: #1e4d2b;
+        font-weight: 800;
+    }
+
+    .welcome-actions .btn-outline-welcome {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+    }
+
+    .tree-mark {
+        position: absolute;
+        right: 32px;
+        bottom: 22px;
+        z-index: 1;
+        color: rgba(255, 255, 255, 0.15);
+        font-size: 8.5rem;
+    }
+
+    .chart-card {
+        padding: 24px;
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .card-title h2 {
+        color: #1a2e1a;
+        font-size: 1.05rem;
+        margin: 0;
+    }
+
+    .card-title i {
+        color: #c8972b;
+    }
+
+    .bar-chart {
+        display: flex;
+        align-items: end;
+        gap: 12px;
+        height: 170px;
+        padding: 18px 10px 4px;
+        border-radius: 8px;
+        background:
+            linear-gradient(180deg, rgba(245, 240, 232, 0.8), rgba(255, 255, 255, 0)),
+            repeating-linear-gradient(180deg, transparent 0 38px, rgba(30, 77, 43, 0.07) 39px 40px);
+    }
+
+    .bar-wrap {
+        flex: 1;
+        min-width: 28px;
+        text-align: center;
+    }
+
+    .bar {
+        width: 100%;
+        min-height: 12px;
+        border-radius: 8px 8px 3px 3px;
+        background: linear-gradient(180deg, #c8972b, #1e4d2b);
+        box-shadow: 0 8px 16px rgba(30, 77, 43, 0.18);
+    }
+
+    .bar-count {
+        margin-bottom: 7px;
+        color: #1e4d2b;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .bar-label {
+        margin-top: 8px;
+        color: #6b7a6b;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .empty-chart {
+        height: 170px;
+        display: grid;
+        place-items: center;
+        color: #6b7a6b;
+        border-radius: 8px;
+        background: #faf7f2;
+    }
+
+    .reports-card {
+        padding: 24px;
+    }
+
+    .reports-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e6ded2;
+        border-radius: 8px;
+    }
+
+    .reports-table {
+        min-width: 760px;
+    }
+
+    .reports-table thead tr {
+        background: #f5f0e8;
+    }
+
+    .reports-table tbody tr:hover {
+        background: #fbfaf6;
+    }
+
+    .type-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+    }
+
+    .type-cell i {
+        color: #c8972b;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        min-width: 96px;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .status-pending {
+        color: #7b5310;
+        background: #fff1cf;
+    }
+
+    .status-in_progress {
+        color: #1e4d2b;
+        background: #dfeee2;
+    }
+
+    .status-resolved {
+        color: #2d6738;
+        background: #e4f2e6;
+    }
+
+    .status-critical {
+        color: #8d3528;
+        background: #f4ded8;
+    }
+
+    .table-action {
+        color: #1e4d2b;
+        border-color: #cad8c6;
+        font-weight: 800;
+    }
+
+    .table-action:hover {
+        color: #ffffff;
+        background: #1e4d2b;
+        border-color: #1e4d2b;
+    }
+
+    .dashboard-empty {
+        display: grid;
+        place-items: center;
+        min-height: 260px;
+        text-align: center;
+        color: #6b7a6b;
+    }
+
+    .dashboard-empty i {
+        margin-bottom: 18px;
+        color: #c8bda9;
+        font-size: 3.25rem;
+    }
+
+    .dashboard-empty p {
+        margin-bottom: 18px;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1080px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dashboard-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .navbar {
+            position: sticky;
+        }
+
+        .dashboard-shell {
+            padding-top: 0;
+        }
+
+        .dashboard-sidebar {
+            position: static;
+            width: auto;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 14px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 0;
+        }
+
+        .dashboard-main {
+            margin-left: 0;
+            padding: 22px;
+        }
+    }
+
+    @media (max-width: 620px) {
+        .stats-grid,
+        .dashboard-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-title-row {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .quick-action {
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar" aria-label="User dashboard navigation">
+        <div class="sidebar-section">
+            <div class="sidebar-label">-- Navigation</div>
+            <a href="{% url 'dashboard' %}" class="sidebar-link active">
+                <i class="fas fa-house"></i>
+                Dashboard
+            </a>
+            <a href="#my-reports" class="sidebar-link">
+                <i class="fas fa-clipboard-list"></i>
+                My Reports
             </a>
         </div>
-    </div>
-</div>
 
-<div class="card p-4">
-    <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>My Reports</h5>
-    {% if reports %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead style="background-color: #f0f7f0;">
-                    <tr>
-                        <th>Type</th>
-                        <th>Location</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for report in reports %}
-                    <tr>
-                        <td><i class="fas fa-exclamation-triangle me-1" style="color: #f4a261;"></i>
-                            {{ report.get_incident_type_display }}
-                        </td>
-                        <td>{{ report.location }}</td>
-                        <td>{{ report.submitted_at|date:"M d, Y" }}</td>
-                        <td>
-                            <span class="status-{{ report.status }}">
-                                {{ report.get_status_display }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline-success">
-                                View
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-            <p class="text-muted">No reports submitted yet.</p>
-            <a href="{% url 'submit_report' %}" class="btn btn-forest">
-                <i class="fas fa-plus me-2"></i>Submit Your First Report
+        <div class="sidebar-section">
+            <div class="sidebar-label">-- Reports</div>
+            <a href="{% url 'submit_report' %}" class="sidebar-link">
+                <i class="fas fa-triangle-exclamation"></i>
+                Report Incident
+            </a>
+            <a href="#my-reports" class="sidebar-link">
+                <i class="fas fa-folder"></i>
+                Incident History
             </a>
         </div>
-    {% endif %}
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">-- More</div>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-user"></i>
+                Profile
+            </a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-title-row">
+            <div class="dashboard-title">
+                <h1>Dashboard</h1>
+                <p>Forest incident activity and report tracking for your account.</p>
+            </div>
+            <a href="{% url 'submit_report' %}" class="btn quick-action">
+                <i class="fas fa-plus"></i>
+                Report Incident
+            </a>
+        </div>
+
+        <section class="stats-grid" aria-label="Report statistics">
+            <article class="dashboard-card stat-tile stat-total">
+                <i class="fas fa-seedling stat-icon"></i>
+                <span class="stat-value">{{ reports.count }}</span>
+                <div class="stat-label">Total Reports</div>
+                <div class="stat-hint">All incidents you submitted</div>
+            </article>
+
+            <article class="dashboard-card stat-tile stat-pending">
+                <i class="fas fa-hourglass-half stat-icon"></i>
+                <span class="stat-value">{{ pending_count }}</span>
+                <div class="stat-label">Pending</div>
+                <div class="stat-hint">Waiting for review</div>
+            </article>
+
+            <article class="dashboard-card stat-tile stat-resolved">
+                <i class="fas fa-circle-check stat-icon"></i>
+                <span class="stat-value">{{ resolved_count }}</span>
+                <div class="stat-label">Resolved</div>
+                <div class="stat-hint">Closed by the response team</div>
+            </article>
+
+            <article class="dashboard-card stat-tile stat-critical">
+                <i class="fas fa-circle-exclamation stat-icon"></i>
+                <span class="stat-value">{{ critical_count }}</span>
+                <div class="stat-label">Critical</div>
+                <div class="stat-hint">Active wildfire or forest damage</div>
+            </article>
+        </section>
+
+        <section class="dashboard-columns">
+            <article class="dashboard-card welcome-panel">
+                <div class="welcome-copy">
+                    <h2><i class="fas fa-tree"></i> Welcome, {{ user.username }}!</h2>
+                    <p>Track and manage your forest incident reports while helping protect the landscapes that support local communities.</p>
+                </div>
+                <div class="welcome-actions">
+                    <a href="{% url 'submit_report' %}" class="btn">
+                        <i class="fas fa-plus"></i>
+                        New Report
+                    </a>
+                    <a href="#my-reports" class="btn btn-outline-welcome">
+                        <i class="fas fa-list"></i>
+                        View Reports
+                    </a>
+                </div>
+                <i class="fas fa-leaf tree-mark"></i>
+            </article>
+
+            <article class="dashboard-card chart-card">
+                <div class="card-title">
+                    <h2>Incident Reports Overview</h2>
+                    <i class="fas fa-chart-column"></i>
+                </div>
+                {% if chart_data %}
+                    <div class="bar-chart" aria-label="Incident reports by month">
+                        {% for item in chart_data %}
+                            <div class="bar-wrap">
+                                <div class="bar-count">{{ item.count }}</div>
+                                <div class="bar" style="height: {{ item.height }}%;"></div>
+                                <div class="bar-label">{{ item.label }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-chart">
+                        No activity yet
+                    </div>
+                {% endif %}
+            </article>
+        </section>
+
+        <section class="dashboard-card reports-card" id="my-reports">
+            <div class="card-title">
+                <h2><i class="fas fa-table-list"></i> My Reports</h2>
+                <span>{{ reports.count }} total</span>
+            </div>
+
+            {% if reports %}
+                <div class="reports-table-wrap">
+                    <table class="reports-table">
+                        <thead>
+                            <tr>
+                                <th>Incident Type</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>
+                                    <span class="type-cell">
+                                        <i class="fas fa-triangle-exclamation"></i>
+                                        {{ report.get_incident_type_display }}
+                                    </span>
+                                </td>
+                                <td>{{ report.location }}</td>
+                                <td>{{ report.submitted_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if report.is_critical %}
+                                        <span class="status-pill status-critical">Critical</span>
+                                    {% else %}
+                                        <span class="status-pill status-{{ report.status }}">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline table-action">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <div>
+                        <i class="fas fa-folder-open"></i>
+                        <p>No reports submitted yet.</p>
+                        <a href="{% url 'submit_report' %}" class="btn quick-action">
+                            <i class="fas fa-plus"></i>
+                            Submit Your First Report
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </main>
 </div>
 {% endblock %}

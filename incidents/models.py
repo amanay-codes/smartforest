@@ -40,3 +40,10 @@ class IncidentReport(models.Model):
 
     def __str__(self):
         return f"{self.incident_type} - {self.location} ({self.status})"
+
+    @property
+    def is_critical(self):
+        return (
+            self.incident_type in {IncidentType.WILDFIRE, IncidentType.FOREST_DAMAGE}
+            and self.status in {ReportStatus.PENDING, ReportStatus.IN_PROGRESS}
+        )
