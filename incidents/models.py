@@ -48,3 +48,4 @@ class IncidentReport(models.Model):
             and self.status in {ReportStatus.PENDING, ReportStatus.IN_PROGRESS}
         )
 
+
