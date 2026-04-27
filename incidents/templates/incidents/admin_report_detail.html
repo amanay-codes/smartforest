@@ -1,0 +1,121 @@
+{% extends 'incidents/base.html' %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Manage Report</h1>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="grid-2">
+    <!-- LEFT: Report Info -->
+    <div>
+        <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <span class="section-title" style="margin-bottom: 0;">Incident Details</span>
+                <span class="badge badge-{{ report.status }}">{{ report.get_status_display }}</span>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Submitted By</label>
+                    <p><i class="fas fa-user" style="color: var(--sage); margin-right: 6px;"></i>{{ report.user.username }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date Submitted</label>
+                    <p><i class="fas fa-calendar" style="color: var(--sage); margin-right: 6px;"></i>{{ report.submitted_at|date:"M d, Y — H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Incident Type</label>
+                    <p><i class="fas fa-exclamation-triangle" style="color: var(--bark); margin-right: 6px;"></i>{{ report.get_incident_type_display }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Location</label>
+                    <p><i class="fas fa-map-marker-alt" style="color: var(--sage); margin-right: 6px;"></i>{{ report.location }}</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 0.5rem;">
+                <label>Description</label>
+                <div style="background: #f8f4ef; border-radius: 8px; padding: 14px; margin-top: 6px; font-size: 0.9rem; line-height: 1.6; color: var(--soil);">
+                    {{ report.description }}
+                </div>
+            </div>
+
+            {% if report.admin_notes %}
+            <div class="note-box" style="margin-top: 1rem;">
+                <div class="note-label"><i class="fas fa-sticky-note" style="margin-right: 6px;"></i>Previous Admin Notes</div>
+                <p style="font-size: 0.9rem; margin-top: 4px;">{{ report.admin_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if report.image %}
+        <div class="card">
+            <div class="section-title">Uploaded Image</div>
+            <img src="{{ report.image.url }}" style="width: 100%; border-radius: 10px; object-fit: cover; max-height: 280px;">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- RIGHT: Update Form -->
+    <div>
+        <div class="card">
+            <div class="section-title">Update Report</div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Update Status</label>
+                    <div style="position: relative;">
+                        {{ form.status }}
+                        <i class="fas fa-chevron-down" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--sage); pointer-events: none; font-size: 0.75rem;"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Admin Notes</label>
+                    {{ form.admin_notes }}
+                    <small style="color: var(--sage); font-size: 0.78rem; margin-top: 4px; display: block;">
+                        These notes will be visible to the citizen who submitted the report.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Status Guide -->
+        <div class="card" style="margin-top: 1rem;">
+            <div class="section-title">Status Guide</div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge badge-pending">Pending</span>
+                    <span style="font-size: 0.825rem; color: var(--sage);">Report received, not yet reviewed</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge badge-in_progress">In Progress</span>
+                    <span style="font-size: 0.825rem; color: var(--sage);">Team is actively working on it</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge badge-resolved">Resolved</span>
+                    <span style="font-size: 0.825rem; color: var(--sage);">Issue has been addressed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

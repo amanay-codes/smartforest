@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+media/
+staticfiles/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+SmartForest_Teammate_Setup.pdf
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
