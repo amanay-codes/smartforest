@@ -15,6 +15,8 @@ A Django incident management system for reporting and managing forest incidents.
    Copy-Item .env.example .env
    ```
 
+   Then replace `your_password_here` in `.env` with the real Neon database password.
+
 4. Run migrations:
 
    ```powershell
@@ -29,40 +31,39 @@ A Django incident management system for reporting and managing forest incidents.
 
 The app runs at `http://127.0.0.1:8000/`.
 
-By default, each developer uses their own local SQLite database at `db.sqlite3`. Users registered on one computer will not appear on another computer unless both apps are configured to use the same shared database.
+The project is configured for a shared Neon PostgreSQL database. When everyone uses the same `DATABASE_URL`, registrations, users, and incident reports are stored in the same cloud database and can be viewed from pgAdmin.
 
 ## Configuration
 
 Local configuration is read from `.env`. Keep real secrets out of Git.
 
-- `DB_ENGINE=sqlite` uses the local SQLite database.
-- `DB_ENGINE=postgresql` uses the PostgreSQL variables in `.env`.
-- `DB_HOST=localhost` means the database on the same computer running Django. Do not use `localhost` if you expect other computers to write into your database.
+- `DATABASE_URL` is the recommended way to connect to Neon PostgreSQL.
+- `DATABASE_URL` overrides the separate `DB_ENGINE` and `DB_*` values.
+- `DB_ENGINE=postgresql` uses the PostgreSQL variables in `.env` if `DATABASE_URL` is empty.
+- `DB_HOST` should be the Neon host, not `localhost`, when the team is sharing one cloud database.
 - `USE_CLOUDINARY=True` enables Cloudinary media storage.
 - `USE_CLOUDINARY=False` stores uploads in local `media/`.
 
-## Shared database setup
+## Neon PostgreSQL Setup
 
-If everyone should register and submit reports into the same database, create one shared PostgreSQL database on a server or hosted provider, then give each developer the same database connection in their local `.env`.
+Use the connection string from Neon in `.env`. Do not commit the real password.
 
 Recommended:
 
 ```env
-DATABASE_URL=postgresql://your_shared_db_user:your_shared_db_password@your-db-host-or-server-ip:5432/smartforest?sslmode=prefer
+DATABASE_URL=postgresql://neondb_owner:your_password_here@ep-morning-darkness-al4cl046-pooler.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
-
-`DATABASE_URL` overrides the separate `DB_ENGINE` and `DB_*` values.
 
 Alternative:
 
 ```env
 DB_ENGINE=postgresql
-DB_NAME=smartforest
-DB_USER=your_shared_db_user
-DB_PASSWORD=your_shared_db_password
-DB_HOST=your-db-host-or-server-ip
+DB_NAME=neondb
+DB_USER=neondb_owner
+DB_PASSWORD=your_password_here
+DB_HOST=ep-morning-darkness-al4cl046-pooler.c-3.eu-central-1.aws.neon.tech
 DB_PORT=5432
-DB_SSLMODE=prefer
+DB_SSLMODE=require
 ```
 
 After changing database settings, run:
