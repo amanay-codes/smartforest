@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'smartforest.wsgi.application'
 
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
+DB_ENGINE = os.environ.get("DB_ENGINE", "postgresql").lower()
 
 if DATABASE_URL:
     DATABASES = {
@@ -115,23 +115,18 @@ elif DB_ENGINE == "postgresql":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get("DB_NAME", "smartforest"),
-            'USER': os.environ.get("DB_USER", "postgres"),
+            'NAME': os.environ.get("DB_NAME", "neondb"),
+            'USER': os.environ.get("DB_USER", "neondb_owner"),
             'PASSWORD': os.environ.get("DB_PASSWORD", ""),
-            'HOST': os.environ.get("DB_HOST", "localhost"),
+            'HOST': os.environ.get("DB_HOST", "ep-morning-darkness-al4cl046-pooler.c-3.eu-central-1.aws.neon.tech"),
             'PORT': os.environ.get("DB_PORT", "5432"),
             'OPTIONS': {
-                'sslmode': os.environ.get("DB_SSLMODE", "prefer"),
+                'sslmode': os.environ.get("DB_SSLMODE", "require"),
             },
         }
     }
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / os.environ.get("DB_NAME", "db.sqlite3"),
-        }
-    }
+    raise ValueError("DB_ENGINE must be postgresql. Use DATABASE_URL for the Neon database.")
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
