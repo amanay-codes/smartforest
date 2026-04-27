@@ -82,6 +82,13 @@ def dashboard(request):
     })
 
 @login_required
+def my_reports(request):
+    reports = IncidentReport.objects.filter(user=request.user)
+    return render(request, 'incidents/my_reports.html', {
+        'reports': reports,
+    })
+
+@login_required
 def submit_report(request):
     if request.method == 'POST':
         form = IncidentReportForm(request.POST, request.FILES)
