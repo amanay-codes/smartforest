@@ -6,6 +6,7 @@
     <title>Smart Forest IMS</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
     <style>
         :root {
             --forest: #1a3a2a;
@@ -539,7 +540,6 @@
                 <li><a href="{% url 'admin_statistics' %}">Statistics</a></li>
                 <li><a href="{% url 'admin_users' %}">Users</a></li>
             {% else %}
-                <li><a href="{% url 'dashboard' %}">My Reports</a></li>
                 <li><a href="{% url 'submit_report' %}">Report Incident</a></li>
             {% endif %}
             <li><a href="{% url 'logout' %}" class="nav-logout">Logout</a></li>

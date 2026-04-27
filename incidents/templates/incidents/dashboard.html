@@ -524,31 +524,12 @@
                 <i class="fas fa-house"></i>
                 Dashboard
             </a>
-            <a href="#my-reports" class="sidebar-link">
+            <a href="{% url 'my_reports' %}" class="sidebar-link">
                 <i class="fas fa-clipboard-list"></i>
                 My Reports
             </a>
         </div>
 
-        <div class="sidebar-section">
-            <div class="sidebar-label">-- Reports</div>
-            <a href="{% url 'submit_report' %}" class="sidebar-link">
-                <i class="fas fa-triangle-exclamation"></i>
-                Report Incident
-            </a>
-            <a href="#my-reports" class="sidebar-link">
-                <i class="fas fa-folder"></i>
-                Incident History
-            </a>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-label">-- More</div>
-            <a href="#" class="sidebar-link">
-                <i class="fas fa-user"></i>
-                Profile
-            </a>
-        </div>
     </aside>
 
     <main class="dashboard-main">
@@ -557,10 +538,6 @@
                 <h1>Dashboard</h1>
                 <p>Forest incident activity and report tracking for your account.</p>
             </div>
-            <a href="{% url 'submit_report' %}" class="btn quick-action">
-                <i class="fas fa-plus"></i>
-                Report Incident
-            </a>
         </div>
 
         <section class="stats-grid" aria-label="Report statistics">
@@ -594,23 +571,15 @@
         </section>
 
         <section class="dashboard-columns">
-            <article class="dashboard-card welcome-panel">
-                <div class="welcome-copy">
-                    <h2><i class="fas fa-tree"></i> Welcome, {{ user.username }}!</h2>
-                    <p>Track and manage your forest incident reports while helping protect the landscapes that support local communities.</p>
-                </div>
-                <div class="welcome-actions">
-                    <a href="{% url 'submit_report' %}" class="btn">
-                        <i class="fas fa-plus"></i>
-                        New Report
-                    </a>
-                    <a href="#my-reports" class="btn btn-outline-welcome">
-                        <i class="fas fa-list"></i>
-                        View Reports
-                    </a>
-                </div>
-                <i class="fas fa-leaf tree-mark"></i>
-            </article>
+            {% if reports %}
+                <article class="dashboard-card welcome-panel">
+                    <div class="welcome-copy">
+                        <h2><i class="fas fa-tree"></i> Welcome, {{ user.username }}!</h2>
+                        <p>Track and manage your forest incident reports while helping protect the landscapes that support local communities.</p>
+                    </div>
+                    <i class="fas fa-leaf tree-mark"></i>
+                </article>
+            {% endif %}
 
             <article class="dashboard-card chart-card">
                 <div class="card-title">
@@ -635,67 +604,6 @@
             </article>
         </section>
 
-        <section class="dashboard-card reports-card" id="my-reports">
-            <div class="card-title">
-                <h2><i class="fas fa-table-list"></i> My Reports</h2>
-                <span>{{ reports.count }} total</span>
-            </div>
-
-            {% if reports %}
-                <div class="reports-table-wrap">
-                    <table class="reports-table">
-                        <thead>
-                            <tr>
-                                <th>Incident Type</th>
-                                <th>Location</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for report in reports %}
-                            <tr>
-                                <td>
-                                    <span class="type-cell">
-                                        <i class="fas fa-triangle-exclamation"></i>
-                                        {{ report.get_incident_type_display }}
-                                    </span>
-                                </td>
-                                <td>{{ report.location }}</td>
-                                <td>{{ report.submitted_at|date:"M d, Y" }}</td>
-                                <td>
-                                    {% if report.is_critical %}
-                                        <span class="status-pill status-critical">Critical</span>
-                                    {% else %}
-                                        <span class="status-pill status-{{ report.status }}">
-                                            {{ report.get_status_display }}
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-outline table-action">
-                                        View
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="dashboard-empty">
-                    <div>
-                        <i class="fas fa-folder-open"></i>
-                        <p>No reports submitted yet.</p>
-                        <a href="{% url 'submit_report' %}" class="btn quick-action">
-                            <i class="fas fa-plus"></i>
-                            Submit Your First Report
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        </section>
     </main>
 </div>
 {% endblock %}
