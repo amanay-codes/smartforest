@@ -47,3 +47,4 @@ class StatusUpdateForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'admin_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+

@@ -47,3 +47,4 @@ class IncidentReport(models.Model):
             self.incident_type in {IncidentType.WILDFIRE, IncidentType.FOREST_DAMAGE}
             and self.status in {ReportStatus.PENDING, ReportStatus.IN_PROGRESS}
         )
+
