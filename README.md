@@ -1,8 +1,15 @@
 A Django incident management system for reporting and managing forest incidents.
 
-## Local Setup
+## Features
 
+- User registration and login
+- Incident reporting with optional image upload
+- Personal dashboard with report stats and history
+- Admin dashboard with filters, status updates, and notes
+- Admin statistics and user overview
+- Optional Cloudinary media storage
 
+## Local setup
 
 1. Create and activate a virtual environment.
 2. Install dependencies:
@@ -11,55 +18,71 @@ A Django incident management system for reporting and managing forest incidents.
    pip install -r requirements.txt
    ```
 
-
-3. Create local settings from the example:
+3. Create a local environment file:
 
    ```powershell
    Copy-Item .env.example .env
    ```
 
-   Then replace `your_password_here` in `.env` with the real Neon database password.
-
-
-4. Run migrations:
+4. Fill in `.env` values (see Configuration below).
+5. Run migrations:
 
    ```powershell
    python manage.py migrate
    ```
 
-5. Start the app:
+6. Create an admin user (optional but recommended):
+
+   ```powershell
+   python manage.py createsuperuser
+   ```
+
+7. Start the app:
 
    ```powershell
    python manage.py runserver
    ```
 
-
-
 The app runs at `http://127.0.0.1:8000/`.
-
-The project is configured for a shared Neon PostgreSQL database. When everyone uses the same `DATABASE_URL`, registrations, users, and incident reports are stored in the same cloud database and can be viewed from pgAdmin.
-
-
 
 ## Configuration
 
-Local configuration is read from `.env`. Keep real secrets out of Git.
+Local configuration is read from `.env`. Keep real secrets out of Git. The project expects PostgreSQL and will raise an error if a non-PostgreSQL engine is configured.
 
-- `DATABASE_URL` is the recommended way to connect to Neon PostgreSQL.
-- `DATABASE_URL` overrides the separate `DB_ENGINE` and `DB_*` values.
-- `DB_ENGINE=postgresql` uses the PostgreSQL variables in `.env` if `DATABASE_URL` is empty.
-- `DB_HOST` should be the Neon host, not `localhost`, when the team is sharing one cloud database.
-- `USE_CLOUDINARY=True` enables Cloudinary media storage.
-- `USE_CLOUDINARY=False` stores uploads in local `media/`.
+Required:
 
-## Neon PostgreSQL Setup
+- `DJANGO_SECRET_KEY` (use a unique value in production)
+- `DJANGO_DEBUG` (`True` or `False`)
+- `DJANGO_ALLOWED_HOSTS` (comma-separated)
+
+Database (recommended):
+
+- `DATABASE_URL` (Neon connection string)
+
+Database (alternative if `DATABASE_URL` is empty):
+
+- `DB_ENGINE=postgresql`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_SSLMODE`
+
+Media storage:
+
+- `USE_CLOUDINARY=True` enables Cloudinary storage
+- `USE_CLOUDINARY=False` stores uploads in local `media/`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (required when Cloudinary is enabled)
+
+## Neon PostgreSQL setup
 
 Use the connection string from Neon in `.env`. Do not commit the real password.
 
 Recommended:
 
 ```env
-DATABASE_URL=postgresql://neondb_owner:your_password_here@ep-morning-darkness-al4cl046-pooler.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://neondb_owner:your_password_here@your-neon-host/neondb?sslmode=require&channel_binding=require
 ```
 
 Alternative:
@@ -69,7 +92,7 @@ DB_ENGINE=postgresql
 DB_NAME=neondb
 DB_USER=neondb_owner
 DB_PASSWORD=your_password_here
-DB_HOST=ep-morning-darkness-al4cl046-pooler.c-3.eu-central-1.aws.neon.tech
+DB_HOST=your-neon-host
 DB_PORT=5432
 DB_SSLMODE=require
 ```
@@ -80,7 +103,22 @@ After changing database settings, run:
 python manage.py migrate
 ```
 
-Django stores registered users in the built-in `auth_user` table.
-Submitted incident reports are stored in the `incidents_incidentreport` table.
+Django stores registered users in the built-in `auth_user` table. Incident reports are stored in `incidents_incidentreport`.
 
-If submitted reports include images, database rows will be shared through PostgreSQL, but local image files will still be saved on the machine that received the upload unless `USE_CLOUDINARY=True` is configured with shared Cloudinary credentials.
+If reports include images, database rows are shared through PostgreSQL, but image files remain local unless `USE_CLOUDINARY=True` is configured with shared Cloudinary credentials.
+
+## Routes
+
+- `/` login
+- `/register/` registration
+- `/dashboard/` user dashboard
+- `/my-reports/` report history
+- `/report/submit/` new report
+- `/admin-dashboard/` admin overview (staff only)
+- `/admin/` Django admin
+
+## Tests
+
+```powershell
+python manage.py test
+```
