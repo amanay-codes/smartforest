@@ -1,0 +1,96 @@
+<<<<<<< HEAD
+=======
+{% extends 'incidents/base.html' %}
+<style>
+    .form-control, .form-select {
+        margin-bottom: 15px !important;
+    }
+</style>
+{% block content %}
+<div class="hero">
+    <h2><i class="fas fa-shield-alt me-2"></i>Admin Dashboard</h2>
+    <p class="mb-0">Manage and monitor all forest incident reports</p>
+</div>
+
+<!-- FILTERS -->
+<div class="card p-4" style="margin-bottom: 3rem;">
+    <h6 class="fw-bold mb-4" style="font-size: 1rem;"><i class="fas fa-filter me-2" style="color: #2d6a4f;"></i>Filter Reports</h6>
+    <form method="GET" class="p-3">
+        <div class="mb-3">
+            <select name="incident_type" class="form-select">
+                <option value="">All Types</option>
+                <option value="wildfire">Wildfire</option>
+                <option value="illegal_logging">Illegal Logging</option>
+                <option value="pollution">Pollution</option>
+                <option value="forest_damage">Forest Damage</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <input type="text" name="keyword" class="form-control" placeholder="Search by keyword...">
+        </div>
+
+        <button type="submit" class="btn btn-forest mt-2" style="font-weight: 800;">
+            <i class="fas fa-search me-1"></i>Search
+        </button>
+    </form>
+</div>
+
+<!-- REPORTS TABLE -->
+<div class="card p-4">
+    <div class="mb-4 pb-3" style="border-bottom: 2px solid #f0f0f0;">
+        <h5 class="fw-bold mb-0"><i class="fas fa-list me-2" style="color: #2d6a4f;"></i>All Reports ({{ total }} Total)</h5>
+    </div>
+    {% if reports %}
+    <div class="table-responsive" style="margin-top: 1.5rem;">
+        <table class="table table-hover">
+            <thead style="background-color: #f0f7f0;">
+                <tr>
+                    <th style="padding: 14px 10px; font-weight: 800;">User</th>
+                    <th style="padding: 14px 10px; font-weight: 800;">Type</th>
+                    <th style="padding: 14px 10px; font-weight: 800;">Location</th>
+                    <th style="padding: 14px 10px; font-weight: 800;">Date</th>
+                    <th style="padding: 14px 10px; font-weight: 800;">Status</th>
+                    <th style="padding: 14px 10px; font-weight: 800;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr style="line-height: 1.8;">
+                    <td style="padding: 12px 10px;"><i class="fas fa-user me-1 text-muted"></i>{{ report.user.username }}</td>
+                    <td style="padding: 12px 10px;">{{ report.get_incident_type_display }}</td>
+                    <td style="padding: 12px 10px;">{{ report.location }}</td>
+                    <td style="padding: 12px 10px;">{{ report.submitted_at|date:"M d, Y" }}</td>
+                    <td style="padding: 12px 10px;">
+                        <span class="status-{{ report.status }}">
+                            {{ report.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 10px;">
+                        <a href="{% url 'admin_report_detail' report.pk %}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-eye me-1"></i>Manage
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No reports found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+>>>>>>> 144372a (Implement user reports page and enhance dashboard navigation)
