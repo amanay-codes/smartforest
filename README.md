@@ -2,6 +2,8 @@ A Django incident management system for reporting and managing forest incidents.
 
 ## Local Setup
 
+
+
 1. Create and activate a virtual environment.
 2. Install dependencies:
 

@@ -1,4 +1,4 @@
-{% extends 'incidents/base.html' %}
+{% extends 'incidents/base.html' %} 
 {% block content %}
 
 <div class="page-header">
@@ -57,7 +57,12 @@
         {% if report.image %}
         <div class="card">
             <div class="section-title">Uploaded Image</div>
-            <img src="{{ report.image.url }}" style="width: 100%; border-radius: 10px; object-fit: cover; max-height: 280px;">
+            <div style="margin-top: 0.5rem;">
+                <img src="{{ report.image.url }}" alt="Incident image" style="width: 100%; border-radius: 10px; object-fit: cover; max-height: 280px;">
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--soil);">
+                <a href="{{ report.image.url }}" target="_blank">View Full Size</a>
+            </p>
         </div>
         {% endif %}
     </div>
