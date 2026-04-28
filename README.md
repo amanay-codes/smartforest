@@ -11,6 +11,7 @@ A Django incident management system for reporting and managing forest incidents.
    pip install -r requirements.txt
    ```
 
+
 3. Create local settings from the example:
 
    ```powershell
@@ -18,6 +19,7 @@ A Django incident management system for reporting and managing forest incidents.
    ```
 
    Then replace `your_password_here` in `.env` with the real Neon database password.
+
 
 4. Run migrations:
 
@@ -31,9 +33,13 @@ A Django incident management system for reporting and managing forest incidents.
    python manage.py runserver
    ```
 
+
+
 The app runs at `http://127.0.0.1:8000/`.
 
 The project is configured for a shared Neon PostgreSQL database. When everyone uses the same `DATABASE_URL`, registrations, users, and incident reports are stored in the same cloud database and can be viewed from pgAdmin.
+
+
 
 ## Configuration
 
