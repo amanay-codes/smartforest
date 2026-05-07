@@ -4,6 +4,7 @@ from urllib.parse import parse_qsl, urlparse, unquote
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 def load_env_file(path):
     """Load simple KEY=VALUE pairs without requiring an extra dependency."""
@@ -76,6 +77,7 @@ if USE_CLOUDINARY:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
