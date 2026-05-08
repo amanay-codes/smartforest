@@ -31,7 +31,7 @@
 
 ---
 
-## 1. 🌲 Project Overview
+## 1. Project Overview
 
 **Smart Forest** is a web-based incident management system designed to help citizens and forest administrators report, track, and resolve forest-related incidents in Morocco.
 
@@ -48,7 +48,7 @@ Forest incidents — wildfires, illegal logging, pollution, and general forest d
 
 ---
 
-## 2. 🚀 Live Demo
+## 2. Live Demo
 
 The project is deployed and accessible at:
 
@@ -58,7 +58,7 @@ The project is deployed and accessible at:
 
 ---
 
-## 3. ✅ Features
+## 3. Features
 
 ### For Citizen Users
 - **Register & Log In** — Create an account and securely log in
@@ -76,7 +76,7 @@ The project is deployed and accessible at:
 
 ---
 
-## 4. 🛠️ Tech Stack
+## 4. Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -91,7 +91,7 @@ The project is deployed and accessible at:
 
 ---
 
-## 5. 📋 Prerequisites
+## 5. Prerequisites
 
 Before you start, make sure the following are installed on your laptop:
 
@@ -122,7 +122,7 @@ We recommend **Visual Studio Code** — [https://code.visualstudio.com/](https:/
 
 ---
 
-## 6. 💻 Local Setup — Step by Step
+## 6. Local Setup — Step by Step
 
 Follow these steps **in order**. Do not skip any step.
 
@@ -207,7 +207,7 @@ The login page should appear. You can register a new user account, or create an 
 
 ---
 
-## 7. 🔐 Environment Variables (.env file)
+## 7. Environment Variables (.env file)
 
 ---
 
@@ -280,7 +280,7 @@ CLOUDINARY_API_SECRET=CONTACT_TEAM_FOR_VALUE
 
 ---
 
-## 8. 👤 Creating an Admin Account
+## 8. Creating an Admin Account
 
 After running `python manage.py migrate`, you can create a superuser (admin) account with:
 
@@ -297,7 +297,7 @@ Once created, start the server and go to **[http://127.0.0.1:8000](http://127.0.
 
 ---
 
-## 9. 📁 Project Structure
+## 9. Project Structure
 
 ```
 smartforest/                        ← Root project folder
@@ -345,7 +345,7 @@ smartforest/                        ← Root project folder
 
 ---
 
-## 10. 🔗 URL Reference
+## 10. URL Reference
 
 | URL | Who Can Access | What It Does |
 |-----|---------------|-------------|
@@ -365,7 +365,7 @@ smartforest/                        ← Root project folder
 
 ---
 
-## 11. 🗄️ Database Schema
+## 11. Database Schema
 
 The app uses two main database tables provided by Django:
 
@@ -390,7 +390,7 @@ Stores all registered user accounts. Key fields: `id`, `username`, `email`, `pas
 
 ---
 
-## 12. 🌐 Deployment
+## 12. Deployment
 
 The app is deployed on **Render** (free tier) and is live at:
 
@@ -405,7 +405,7 @@ The `build.sh` script handles installing dependencies and running migrations aut
 
 ---
 
-## 13. 👥 Team
+## 13. Team
 
 | Name | Role |
 |------|------|
